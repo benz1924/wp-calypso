@@ -50,6 +50,7 @@ const SharingServiceAction = ( {
 			} );
 		} else {
 			label = translate( 'Disconnect', { context: 'Sharing: Publicize disconnect button label' } );
+			warning = true;
 		}
 		if ( 'must-disconnect' === status ) {
 			warning = true;
