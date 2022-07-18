@@ -50,11 +50,8 @@ const SharingServiceAction = ( {
 			} );
 		} else {
 			label = translate( 'Disconnect', { context: 'Sharing: Publicize disconnect button label' } );
-			warning = true;
 		}
-		if ( 'must-disconnect' === status ) {
-			warning = true;
-		}
+		warning = true;
 	} else if ( 'reconnect' === status || 'refresh-failed' === status ) {
 		label = translate( 'Reconnect', {
 			context: 'Sharing: Publicize reconnect pending button label',
