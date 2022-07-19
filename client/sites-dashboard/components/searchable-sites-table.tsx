@@ -1,4 +1,4 @@
-import { ClassNames } from '@emotion/react';
+import { css as classname } from '@emotion/css';
 import { useI18n } from '@wordpress/react-i18n';
 import { addQueryArgs, removeQueryArgs } from '@wordpress/url';
 import page from 'page';
@@ -40,32 +40,28 @@ export function SearchableSitesTable( { sites, initialSearch }: SearchableSitesT
 	};
 
 	return (
-		<ClassNames>
-			{ ( { css } ) => (
-				<>
-					<div
-						className={ css`
-							margin: 32px 0;
-							width: 286px;
-							max-width: 100%;
-						` }
-					>
-						<SitesSearch
-							searchIcon={ <SitesSearchIcon /> }
-							onSearch={ handleSearch }
-							delaySearch
-							isReskinned
-							placeholder={ __( 'Search by name or domain…' ) }
-							defaultValue={ initialSearch }
-						/>
-					</div>
-					{ filteredSites.length > 0 ? (
-						<SitesTable sites={ filteredSites } />
-					) : (
-						<h2>{ __( 'No sites match your search.' ) }</h2>
-					) }
-				</>
+		<>
+			<div
+				className={ classname`
+					margin: 32px 0;
+					width: 286px;
+					max-width: 100%;
+				` }
+			>
+				<SitesSearch
+					searchIcon={ <SitesSearchIcon /> }
+					onSearch={ handleSearch }
+					delaySearch
+					isReskinned
+					placeholder={ __( 'Search by name or domain…' ) }
+					defaultValue={ initialSearch }
+				/>
+			</div>
+			{ filteredSites.length > 0 ? (
+				<SitesTable sites={ filteredSites } />
+			) : (
+				<h2>{ __( 'No sites match your search.' ) }</h2>
 			) }
-		</ClassNames>
+		</>
 	);
 }

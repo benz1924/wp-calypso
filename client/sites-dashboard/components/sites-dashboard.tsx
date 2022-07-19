@@ -1,5 +1,6 @@
 import { Button, Gridicon } from '@automattic/components';
-import { css, ClassNames } from '@emotion/react';
+import { css as classname } from '@emotion/css';
+import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useI18n } from '@wordpress/react-i18n';
 import { useSiteExcerptsQuery } from 'calypso/data/sites/use-site-excerpts-query';
@@ -78,30 +79,23 @@ export function SitesDashboard( { queryParams }: SitesDashboardProps ) {
 				</HeaderControls>
 			</PageHeader>
 			<PageBodyWrapper>
-				<ClassNames>
-					{ ( { css } ) => (
-						<SitesTableFilterTabs
-							allSites={ sites }
-							className={ css`
-								${ wideCentered }
-								position: relative;
-								top: -48px;
-							` }
-							filterOptions={ queryParams }
-						>
-							{ ( filteredSites, filterOptions ) =>
-								filteredSites.length ? (
-									<SearchableSitesTable
-										sites={ filteredSites }
-										initialSearch={ queryParams.search }
-									/>
-								) : (
-									<NoSitesMessage status={ filterOptions.status } />
-								)
-							}
-						</SitesTableFilterTabs>
-					) }
-				</ClassNames>
+				<SitesTableFilterTabs
+					allSites={ sites }
+					className={ classname`
+						${ wideCentered }
+						position: relative;
+						top: -48px;
+					` }
+					filterOptions={ queryParams }
+				>
+					{ ( filteredSites, filterOptions ) =>
+						filteredSites.length ? (
+							<SearchableSitesTable sites={ filteredSites } initialSearch={ queryParams.search } />
+						) : (
+							<NoSitesMessage status={ filterOptions.status } />
+						)
+					}
+				</SitesTableFilterTabs>
 			</PageBodyWrapper>
 		</main>
 	);
