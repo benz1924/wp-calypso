@@ -179,7 +179,9 @@ export default function ShoppingCartForDIFM( { selectedPages }: { selectedPages:
 
 	const isInitialBasketLoaded = items.length > 1;
 
-	return ( newOrExistingSiteChoice === 'existing-site' && isLoading ) || ! isInitialBasketLoaded ? (
+	return ( newOrExistingSiteChoice === 'existing-site' && isLoading ) ||
+		! isInitialBasketLoaded ||
+		! currencyCode ? (
 		<LoadingContainer>
 			<LoadingLine key="plan-placeholder" />
 			<LoadingLine key="difm-placeholder" />
@@ -191,11 +193,7 @@ export default function ShoppingCartForDIFM( { selectedPages }: { selectedPages:
 			<Cart>
 				<LineItemsWrapper>
 					{ items.map( ( item ) => (
-						<DummyLineItem
-							key={ item.productSlug }
-							{ ...item }
-							currencyCode={ currencyCode ?? 'USD' }
-						/>
+						<DummyLineItem key={ item.productSlug } { ...item } currencyCode={ currencyCode } />
 					) ) }
 
 					<Total>
