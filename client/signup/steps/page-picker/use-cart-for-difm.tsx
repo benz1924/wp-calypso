@@ -182,6 +182,7 @@ function getSiteCartProducts( {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const debounce = ( callback: ( ...args: any[] ) => any, timeout: number ) => {
 	let timeoutId: number | undefined = undefined;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return ( ...args: any[] ) => {
 		window.clearTimeout( timeoutId );
 		timeoutId = window.setTimeout( () => {
@@ -245,7 +246,7 @@ export function useCartForDIFM( selectedPages: string[] ): {
 		if ( ! difmLiteProduct || ! extraPageProduct ) {
 			dispatch( requestProductsList() );
 		}
-	}, [ dispatch, siteId ] );
+	}, [ dispatch, siteId, difmLiteProduct, extraPageProduct ] );
 
 	const debouncedReplaceProductsInCart = useMemo(
 		() =>
