@@ -144,7 +144,7 @@ function getSiteCartProducts( {
 					productOriginalName: product.product_name,
 					itemSubTotal: product.cost,
 					productCost: product.cost,
-					meta: translate( '%(perPageCost)d Per Page', {
+					meta: translate( '%(perPageCost)s Per Page', {
 						args: { perPageCost: product.item_original_cost_for_quantity_one_display },
 					} ),
 				};
