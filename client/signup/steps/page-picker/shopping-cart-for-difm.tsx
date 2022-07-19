@@ -2,7 +2,6 @@ import formatCurrency from '@automattic/format-currency';
 import styled from '@emotion/styled';
 import { useTranslate } from 'i18n-calypso';
 import { useSelector } from 'react-redux';
-import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
 import { getSignupDependencyStore } from 'calypso/state/signup/dependency-store/selectors';
 import LoadingLine from './loading-content';
 import useCartForDIFM, { CartItem } from './use-cart-for-difm';
@@ -172,16 +171,17 @@ function DummyLineItem( {
 
 export default function ShoppingCartForDIFM( { selectedPages }: { selectedPages: string[] } ) {
 	const translate = useTranslate();
-	const { items, total, isLoading } = useCartForDIFM( selectedPages );
+	const { items, total, isCartLoading, isProductsLoading, effectiveCurrencyCode } =
+		useCartForDIFM( selectedPages );
 	const signupDependencies = useSelector( getSignupDependencyStore );
 	const { newOrExistingSiteChoice } = signupDependencies;
-	const currencyCode = useSelector( getCurrentUserCurrencyCode );
 
 	const isInitialBasketLoaded = items.length > 1;
 
-	return ( newOrExistingSiteChoice === 'existing-site' && isLoading ) ||
+	return ( newOrExistingSiteChoice === 'existing-site' && isCartLoading ) ||
 		! isInitialBasketLoaded ||
-		! currencyCode ? (
+		! effectiveCurrencyCode ||
+		isProductsLoading ? (
 		<LoadingContainer>
 			<LoadingLine key="plan-placeholder" />
 			<LoadingLine key="difm-placeholder" />
@@ -193,7 +193,11 @@ export default function ShoppingCartForDIFM( { selectedPages }: { selectedPages:
 			<Cart>
 				<LineItemsWrapper>
 					{ items.map( ( item ) => (
-						<DummyLineItem key={ item.productSlug } { ...item } currencyCode={ currencyCode } />
+						<DummyLineItem
+							key={ item.productSlug }
+							{ ...item }
+							currencyCode={ effectiveCurrencyCode }
+						/>
 					) ) }
 
 					<Total>

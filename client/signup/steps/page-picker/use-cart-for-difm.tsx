@@ -14,7 +14,7 @@ import getCartKey from 'calypso/my-sites/checkout/get-cart-key';
 import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
 import { buildDIFMCartExtrasObject } from 'calypso/state/difm/assemblers';
 import { requestProductsList } from 'calypso/state/products-list/actions';
-import { getProductBySlug } from 'calypso/state/products-list/selectors';
+import { getProductBySlug, isProductsListFetching } from 'calypso/state/products-list/selectors';
 import { getSignupDependencyStore } from 'calypso/state/signup/dependency-store/selectors';
 import { fetchSitePlans } from 'calypso/state/sites/plans/actions';
 import { getSite } from 'calypso/state/sites/selectors';
@@ -194,9 +194,11 @@ const debounce = ( callback: ( ...args: any[] ) => any, timeout: number ) => {
 export function useCartForDIFM( selectedPages: string[] ): {
 	items: CartItem[];
 	total: string | null;
-	isLoading: boolean;
-	isPendingUpdate: boolean;
+	isCartLoading: boolean;
+	isCartPendingUpdate: boolean;
 	isCartUpdateStarted: boolean;
+	isProductsLoading: boolean;
+	effectiveCurrencyCode: string | null;
 } {
 	//This state is used by loader states to provide immediate feedback when a deebounced change happens to a cart
 	const [ isCartUpdateStarted, setIsCartUpdateStarted ] = useState( false );
@@ -209,12 +211,13 @@ export function useCartForDIFM( selectedPages: string[] ): {
 	const activePremiumPlanScheme = isEnabled( 'plans/pro-plan' ) ? proPlan : premiumPlan;
 	const { newOrExistingSiteChoice, siteId, siteSlug } = signupDependencies;
 
+	const isProductsLoading = useSelector( isProductsListFetching );
 	const extraPageProduct = useSelector( ( state ) =>
 		getProductBySlug( state, WPCOM_DIFM_EXTRA_PAGE )
 	);
 	const difmLiteProduct = useSelector( ( state ) => getProductBySlug( state, WPCOM_DIFM_LITE ) );
 
-	const currencyCode = useSelector( getCurrentUserCurrencyCode );
+	const userCurrencyCode = useSelector( getCurrentUserCurrencyCode );
 
 	const site = useSelector( ( state ) => getSite( state, siteSlug ?? siteId ) );
 	const cartKey = getCartKey( { selectedSite: site } );
@@ -222,6 +225,12 @@ export function useCartForDIFM( selectedPages: string[] ): {
 	const { replaceProductsInCart, responseCart, isLoading, isPendingUpdate } = useShoppingCart(
 		cartKey ?? undefined
 	);
+	const getEffectiveCurrencyCode = useCallback( () => {
+		if ( newOrExistingSiteChoice === 'existing-site' ) {
+			return responseCart.currency ?? userCurrencyCode;
+		}
+		return userCurrencyCode;
+	}, [ newOrExistingSiteChoice, responseCart.currency, userCurrencyCode ] );
 
 	const getDifmLiteCartProduct = useCallback( () => {
 		if ( difmLiteProduct ) {
@@ -243,7 +252,7 @@ export function useCartForDIFM( selectedPages: string[] ): {
 
 	useEffect( () => {
 		siteId && dispatch( fetchSitePlans( siteId ) );
-		if ( ! difmLiteProduct || ! extraPageProduct ) {
+		if ( ! difmLiteProduct || ! extraPageProduct || ! userCurrencyCode ) {
 			dispatch( requestProductsList() );
 		}
 	}, [ dispatch, siteId, difmLiteProduct, extraPageProduct ] );
@@ -267,39 +276,45 @@ export function useCartForDIFM( selectedPages: string[] ): {
 		}
 	}, [ newOrExistingSiteChoice, getDifmLiteCartProduct, debouncedReplaceProductsInCart ] );
 
+	const effectiveCurrencyCode = getEffectiveCurrencyCode();
 	let displayedCartItems: CartItem[] = [];
-	if ( extraPageProduct && difmLiteProduct && activePremiumPlanScheme && currencyCode ) {
+	let totalCostFormatted = null;
+	if ( extraPageProduct && difmLiteProduct && activePremiumPlanScheme && effectiveCurrencyCode ) {
 		if ( newOrExistingSiteChoice === 'existing-site' ) {
 			displayedCartItems = getSiteCartProducts( {
 				responseCart,
 				translate,
 				extraPageProduct,
-				currencyCode: currencyCode,
+				currencyCode: effectiveCurrencyCode,
 			} );
 		} else {
 			displayedCartItems = getDummyCartProducts( {
 				selectedPages,
-				currencyCode: currencyCode,
+				currencyCode: effectiveCurrencyCode,
 				translate,
 				activePlanScheme: activePremiumPlanScheme,
 				difmLiteProduct,
 				extraPageProduct,
 			} );
 		}
-	}
 
-	const totalCost = displayedCartItems.reduce(
-		( total, currentProduct ) => currentProduct.itemSubTotal + total,
-		0
-	);
-	const totalCostFormatted = formatCurrency( totalCost, currencyCode ?? 'USD', { precision: 0 } );
+		const totalCost = displayedCartItems.reduce(
+			( total, currentProduct ) => currentProduct.itemSubTotal + total,
+			0
+		);
+		totalCostFormatted = formatCurrency( totalCost, effectiveCurrencyCode, {
+			precision: 0,
+		} );
+	}
 
 	return {
 		items: displayedCartItems,
 		total: totalCostFormatted,
-		isLoading,
-		isPendingUpdate,
+		isCartLoading: isLoading,
+		isCartPendingUpdate: isPendingUpdate,
+		isProductsLoading,
 		isCartUpdateStarted,
+		effectiveCurrencyCode,
 	};
 }
 

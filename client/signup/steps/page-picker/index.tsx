@@ -24,7 +24,6 @@ import {
 } from 'calypso/signup/difm/constants';
 import { useTranslatedPageTitles } from 'calypso/signup/difm/translation-hooks';
 import StepWrapper from 'calypso/signup/step-wrapper';
-import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
 import { getProductBySlug } from 'calypso/state/products-list/selectors';
 import { saveSignupStep, submitSignupStep } from 'calypso/state/signup/progress/actions';
 import { getSiteId } from 'calypso/state/sites/selectors';
@@ -214,6 +213,15 @@ const StyledButton = styled( Button )`
 	}
 `;
 
+const Placeholder = styled.div`
+	animation: pulse-light 2s ease-in-out infinite;
+	background-color: var( --color-neutral-10 );
+	color: transparent;
+	min-height: 16px;
+	display: inline-block;
+	min-width: 32px;
+`;
+
 function DIFMPagePicker( props: StepProps ) {
 	const {
 		stepName,
@@ -229,12 +237,20 @@ function DIFMPagePicker( props: StepProps ) {
 		CONTACT_PAGE,
 	] );
 	const cartKey = useSelector( ( state ) => getSiteId( state, siteSlug ?? siteId ) );
-	const currencyCode = useSelector( getCurrentUserCurrencyCode );
 
 	const extraPageProduct = useSelector( ( state ) =>
 		getProductBySlug( state, WPCOM_DIFM_EXTRA_PAGE )
 	);
 	const { replaceProductsInCart } = useShoppingCart( cartKey ?? undefined );
+	const {
+		items,
+		isCartLoading,
+		isCartPendingUpdate,
+		isCartUpdateStarted,
+		isProductsLoading,
+		effectiveCurrencyCode: currencyCode,
+	} = useCartForDIFM( selectedPages );
+
 	useEffect( () => {
 		dispatch( saveSignupStep( { stepName } ) );
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,9 +272,13 @@ function DIFMPagePicker( props: StepProps ) {
 		components: { wbr: <wbr /> },
 	} );
 	const subHeaderText = translate(
-		'Select your desired pages by clicking the thumbnails. {{br}}{{/br}}Your site build includes up to %(freePageCount)s pages, add additional pages for %(extraPagePrice)s each.',
+		'Select your desired pages by clicking the thumbnails. {{br}}{{/br}}Your site build includes up to %(freePageCount)s pages, add additional pages for {{PriceWrapper}}%(extraPagePrice)s{{/PriceWrapper}} each.',
 		{
-			components: { br: <br /> },
+			components: {
+				br: <br />,
+				PriceWrapper:
+					! currencyCode || isProductsLoading || isCartLoading ? <Placeholder /> : <span />,
+			},
 			args: {
 				freePageCount: 5,
 				extraPagePrice:
@@ -269,8 +289,6 @@ function DIFMPagePicker( props: StepProps ) {
 		}
 	);
 
-	const { items, isPendingUpdate, isLoading, isCartUpdateStarted } =
-		useCartForDIFM( selectedPages );
 	const isExistingSite = newOrExistingSiteChoice === 'existing-site';
 	const isInitialBasketLoaded = items.length > 0;
 
@@ -291,7 +309,11 @@ function DIFMPagePicker( props: StepProps ) {
 				<StyledButton
 					disabled={ ! isInitialBasketLoaded }
 					busy={
-						( isExistingSite && ( isPendingUpdate || isLoading || isCartUpdateStarted ) ) ||
+						( isExistingSite &&
+							( isProductsLoading ||
+								isCartPendingUpdate ||
+								isCartLoading ||
+								isCartUpdateStarted ) ) ||
 						isCheckoutPressed
 					}
 					primary
