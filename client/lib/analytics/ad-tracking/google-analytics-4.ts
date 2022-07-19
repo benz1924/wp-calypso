@@ -7,7 +7,7 @@ import { TRACKING_IDS } from './constants';
 import './setup';
 
 export function setup( params: Gtag.ConfigParams ) {
-	// TODO: GA4 properties for WPCOM will be here
+	window.gtag( 'config', TRACKING_IDS.wpcomGoogleGA4Gtag, params );
 
 	if ( isJetpackCloud() ) {
 		window.gtag( 'config', TRACKING_IDS.jetpackGoogleGA4Gtag, params );
