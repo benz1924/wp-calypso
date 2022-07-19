@@ -167,7 +167,7 @@ function getSiteCartProducts( {
 			productSlug: extraPageProduct.product_slug,
 			productOriginalName: extraPageProduct.product_name,
 			itemSubTotal: 0,
-			productCost: 0,
+			productCost: extraPageProduct.cost,
 			nameOverride: translate( '0 Extra Pages' ),
 			meta: translate( '%(perPageCost)s Per Page', {
 				args: {
