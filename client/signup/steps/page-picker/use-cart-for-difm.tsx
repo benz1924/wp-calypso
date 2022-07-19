@@ -10,13 +10,14 @@ import { useShoppingCart } from '@automattic/shopping-cart';
 import { LocalizeProps, useTranslate } from 'i18n-calypso';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import getCartKey from 'calypso/my-sites/checkout/get-cart-key';
 import { getCurrentUserCurrencyCode } from 'calypso/state/currency-code/selectors';
 import { buildDIFMCartExtrasObject } from 'calypso/state/difm/assemblers';
 import { requestProductsList } from 'calypso/state/products-list/actions';
 import { getProductBySlug } from 'calypso/state/products-list/selectors';
 import { getSignupDependencyStore } from 'calypso/state/signup/dependency-store/selectors';
 import { fetchSitePlans } from 'calypso/state/sites/plans/actions';
-import { getSiteId } from 'calypso/state/sites/selectors';
+import { getSite } from 'calypso/state/sites/selectors';
 import type { ResponseCart } from '@automattic/shopping-cart';
 import type { ProductListItem } from 'calypso/state/products-list/selectors/get-products-list';
 import type { TranslateResult } from 'i18n-calypso';
@@ -178,6 +179,7 @@ function getSiteCartProducts( {
 	return cartItems;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const debounce = ( callback: ( ...args: any[] ) => any, timeout: number ) => {
 	let timeoutId: number | undefined = undefined;
 	return ( ...args: any[] ) => {
@@ -213,7 +215,9 @@ export function useCartForDIFM( selectedPages: string[] ): {
 
 	const currencyCode = useSelector( getCurrentUserCurrencyCode );
 
-	const cartKey = useSelector( ( state ) => getSiteId( state, siteSlug ?? siteId ) );
+	const site = useSelector( ( state ) => getSite( state, siteSlug ?? siteId ) );
+	const cartKey = getCartKey( { selectedSite: site } );
+
 	const { replaceProductsInCart, responseCart, isLoading, isPendingUpdate } = useShoppingCart(
 		cartKey ?? undefined
 	);
@@ -249,7 +253,7 @@ export function useCartForDIFM( selectedPages: string[] ): {
 				await replaceProductsInCart( products );
 				setIsCartUpdateStarted( false );
 			}, 800 ),
-		[]
+		[ replaceProductsInCart ]
 	);
 
 	useEffect( () => {
