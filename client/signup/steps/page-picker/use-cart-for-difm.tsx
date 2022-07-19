@@ -56,15 +56,15 @@ function getDummyCartProducts( {
 	if ( difmLiteProduct && activePlanScheme && extraPageProduct ) {
 		displayedCartItems = [
 			{
-				nameOverride: translate( 'Website Design Service' ),
 				productSlug: difmLiteProduct.product_slug,
+				nameOverride: translate( 'Website Design Service' ),
 				productOriginalName: difmLiteProduct.product_name,
 				itemSubTotal: difmLiteProduct.cost,
 				productCost: difmLiteProduct.cost,
 				meta: translate( 'One-time fee' ),
 			},
 			{
-				productSlug: difmLiteProduct.product_slug,
+				productSlug: activePlanScheme.product_slug,
 				productOriginalName: activePlanScheme.product_name,
 				itemSubTotal: activePlanScheme.cost,
 				productCost: activePlanScheme.cost,
@@ -75,12 +75,11 @@ function getDummyCartProducts( {
 				} ),
 			},
 			{
+				productSlug: extraPageProduct.product_slug,
 				nameOverride: translate( '%(numberOfPages)d Extra Page', '%(numberOfPages)d Extra Pages', {
 					count: extraPageCount,
 					args: { numberOfPages: extraPageCount },
 				} ),
-
-				productSlug: difmLiteProduct.product_slug,
 				productOriginalName: extraPageProduct.product_name,
 				productCost: extraPageProduct.cost,
 				meta: translate( '%(perPageCost)s Per Page', {
