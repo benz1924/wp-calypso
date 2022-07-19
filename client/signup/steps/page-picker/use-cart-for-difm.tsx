@@ -222,8 +222,6 @@ export function useCartForDIFM( selectedPages: string[] ): {
 		cartKey ?? undefined
 	);
 
-	const serializedDifmProduct = JSON.stringify( difmLiteProduct );
-	const serializedSignupDependencies = JSON.stringify( signupDependencies );
 	const getDifmLiteCartProduct = useCallback( () => {
 		if ( difmLiteProduct ) {
 			return {
@@ -235,22 +233,25 @@ export function useCartForDIFM( selectedPages: string[] ): {
 			};
 		}
 		return null;
-	}, [ serializedSignupDependencies, selectedPages, serializedDifmProduct ] );
+	}, [ signupDependencies, selectedPages, difmLiteProduct ] );
 
-	// As soon as page selection changes show some feedback to the user
 	useEffect( () => {
+		// As soon as page selection changes show some loading feedback to the user
 		setIsCartUpdateStarted( true );
 	}, [ setIsCartUpdateStarted, selectedPages ] );
 
 	useEffect( () => {
 		siteId && dispatch( fetchSitePlans( siteId ) );
-		dispatch( requestProductsList() );
+		if ( ! difmLiteProduct || ! extraPageProduct ) {
+			dispatch( requestProductsList() );
+		}
 	}, [ dispatch, siteId ] );
 
 	const debouncedReplaceProductsInCart = useMemo(
 		() =>
 			debounce( async ( products ) => {
 				await replaceProductsInCart( products );
+				// Switch off loading feedback once basket is properly updated
 				setIsCartUpdateStarted( false );
 			}, 800 ),
 		[ replaceProductsInCart ]
