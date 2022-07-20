@@ -22,7 +22,7 @@ export const SITE_EXCERPT_REQUEST_FIELDS = [
 
 export const SITE_EXCERPT_COMPUTED_FIELDS = [ 'slug' ] as const;
 
-export const SITE_EXCERPT_REQUEST_OPTIONS = [ 'is_wpforteams_site' ] as const;
+export const SITE_EXCERPT_REQUEST_OPTIONS = [ 'is_wpforteams_site', 'updated_at' ] as const;
 
 type SiteExcerptNetworkData = Pick< SiteData, typeof SITE_EXCERPT_REQUEST_FIELDS[ number ] > & {
 	options?: Pick< SiteDataOptions, typeof SITE_EXCERPT_REQUEST_OPTIONS[ number ] >;
